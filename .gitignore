@@ -1,0 +1,4 @@
+.sache-cache/*
+node_modules/*
+target/*
+public/js/*
