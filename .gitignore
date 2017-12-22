@@ -1,4 +1,4 @@
-.sa-cache/*
+.sass-cache/*
 node_modules/*
 target/*
 public/js/*
