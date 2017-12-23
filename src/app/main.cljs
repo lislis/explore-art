@@ -1,17 +1,34 @@
 (ns app.main)
 
+(def width 800)
+(def height 600)
+
+(defonce state
+  (atom {:walker
+         {:x (/ width 2) :y (/ height 2)}}))
+
+(defn walker-draw [walker]
+  (let [x (:x walker)
+        y (:y walker)]
+    (js/point x y)))
+
+(defn walker-step [walker]
+  (let [step-x (js/random -1 1)
+        step-y (js/random -1 1)]
+    {:x (+ step-x (:x walker))
+     :y (+ step-y (:y walker))}))
+
 (defn setup []
-  (js/createCanvas 800 600))
+  (js/createCanvas width height))
 
 (defn draw []
   ;(js/clear)
-  (js/fill (if js/mouseIsPressed 0 255))
-  (js/ellipse js/mouseX js/mouseY 80 80))
+  (swap! state assoc :walker (walker-step (:walker @state)))
+  (walker-draw (:walker @state)))
 
 
 ;; start stop pattern as described in
 ;; https://github.com/thheller/shadow-cljs/wiki/ClojureScript-for-the-browser
-
 (defn start []
   ;; do whatever you need to start your app
   (doto js/window
