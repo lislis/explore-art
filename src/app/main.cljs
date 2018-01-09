@@ -1,7 +1,8 @@
 (ns app.main
-  (:require [app.walker :as walker]))
+  (:require [app.walker :as walker]
+            [app.distribution :as dist]))
 
-(def width 800)
+(def width 640)
 (def height 600)
 
 (defonce state
@@ -12,8 +13,8 @@
   (js/createCanvas width height))
 
 (defn draw []
-  ;(js/clear)
-  (swap! state assoc :walker (walker/walker-step (:walker @state)))
+  ;(dist/draw-color-splatter)
+  (swap! state assoc :walker (walker/walker-gaussian (:walker @state)))
   (walker/walker-draw (:walker @state)))
 
 
@@ -26,6 +27,7 @@
   (js/console.log "START"))
 
 (defn stop []
+  (js.clear)
   (js/console.log "STOP"))
 
 (defn ^:export init []
