@@ -14,7 +14,7 @@
 
 (defn draw []
   ;(dist/draw-color-splatter)
-  (swap! state assoc :walker (walker/walker-gaussian (:walker @state)))
+  (swap! state assoc :walker (walker/walker-montecarlo (:walker @state)))
   (walker/walker-draw (:walker @state)))
 
 

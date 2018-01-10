@@ -74,3 +74,25 @@
       (= direction 1) {:x (- size (:x walker)) :y (:y walker)}
       (= direction 2) {:x (:x walker) :y (+ size (:y walker))}
       :else {:x (:x walker) :y (- size (:y walker))})))
+
+(defn probability [num]
+  num)
+
+
+(defn montecarlo []
+  (loop []
+    (let [r1 (js/random 1)
+          prob (probability r1)
+          r2 (js/random 1)]
+      (if (< r2 prob)
+        r1
+        (recur)))))
+
+(defn walker-montecarlo
+  "taking bigger steps according to Monte Carlo"
+  [walker]
+  (let [stepsize (* 2 (montecarlo))
+        step-x (js/random (- stepsize) stepsize)
+        step-y (js/random (- stepsize) stepsize)]
+    {:x (+ step-x (:x walker))
+     :y (+ step-y (:y walker))}))
