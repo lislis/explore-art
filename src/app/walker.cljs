@@ -104,6 +104,8 @@
      :y (+ step-y (:y walker))}))
 
 
+;; add xoff and yoff to your state atom!
+
 (defn walker-noise-direction
   "use Perlin noise for location"
   [walker width height]

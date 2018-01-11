@@ -6,20 +6,23 @@
 (def height 600)
 
 (defonce state
-  (atom {:walker
-         {:x (/ width 2)
-          :y (/ height 2)
-          :xoff 0
-          :yoff 10000}}))
+  (atom {:xoff 0.0}))
+
+(defn traverse-pixels [width height]
+  (dorun
+   (let [xoff 0
+         yoff 10000]
+     (for [y (range height)
+           x (range width)]
+       (js/set x y (js/random 255))))))
 
 (defn setup []
   (js/createCanvas width height))
 
 (defn draw []
-  ;(dist/draw-color-splatter)
-  (swap! state assoc :walker (walker/walker-noise-step (:walker @state)))
-  (walker/walker-draw-circle (:walker @state)))
-
+  (js/loadPixels)
+  (traverse-pixels width height)
+  (js/updatePixels))
 
 ;; start stop pattern as described in
 ;; https://github.com/thheller/shadow-cljs/wiki/ClojureScript-for-the-browser
