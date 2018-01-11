@@ -7,15 +7,18 @@
 
 (defonce state
   (atom {:walker
-         {:x (/ width 2) :y (/ height 2)}}))
+         {:x (/ width 2)
+          :y (/ height 2)
+          :xoff 0
+          :yoff 10000}}))
 
 (defn setup []
   (js/createCanvas width height))
 
 (defn draw []
   ;(dist/draw-color-splatter)
-  (swap! state assoc :walker (walker/walker-montecarlo (:walker @state)))
-  (walker/walker-draw (:walker @state)))
+  (swap! state assoc :walker (walker/walker-noise-step (:walker @state)))
+  (walker/walker-draw-circle (:walker @state)))
 
 
 ;; start stop pattern as described in

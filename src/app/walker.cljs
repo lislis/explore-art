@@ -23,6 +23,13 @@
         y (:y walker)]
     (js/point x y)))
 
+(defn walker-draw-circle [walker]
+  (let [x (:x walker)
+        y (:y walker)]
+    (js/fill 80 2000 150 20)
+    (js/noStroke)
+    (js/ellipse x y 10 10)))
+
 (defn mouse-offset
   "calculate in which direction to update"
   [walker]
@@ -78,7 +85,6 @@
 (defn probability [num]
   num)
 
-
 (defn montecarlo []
   (loop []
     (let [r1 (js/random 1)
@@ -96,3 +102,27 @@
         step-y (js/random (- stepsize) stepsize)]
     {:x (+ step-x (:x walker))
      :y (+ step-y (:y walker))}))
+
+
+(defn walker-noise-direction
+  "use Perlin noise for location"
+  [walker width height]
+  (let [x (js/map (js/noise (:xoff walker)) 0 1 0 width)
+        y (js/map (js/noise (:yoff walker)) 0 1 0 height)]
+    {:x x
+     :y y
+     :xoff (+ 0.01 (:xoff walker))
+     :yoff (+ 0.01 (:yoff walker))}))
+
+(defn walker-noise-step
+  "User Perlin noise for step size"
+  [walker]
+  (let [step-x (js/map (js/noise (:xoff walker)) 0 1 -1 1)
+        step-y (js/map (js/noise (:yoff walker)) 0 1 -1 1)
+        x (+ step-x (:x walker))
+        y (+ step-y (:y walker))]
+    (js/console.log x)
+    {:x x
+     :y y
+     :xoff (+ 0.01 (:xoff walker))
+     :yoff (+ 0.01 (:yoff walker))}))
