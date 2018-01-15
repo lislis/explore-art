@@ -7,23 +7,30 @@
 (def width 600)
 (def height 400)
 
+(defn create-mover-vec [l v a]
+  {:location l
+   :velocity v
+   :acceleration a})
+
+(defn create-mover [x y vx vy ax ay]
+  (create-mover-vec
+   (vector/create x y)
+   (vector/create vx vy)
+   (vector/create ax ay)))
+
 (defonce state
-  (atom {:location (vector/create 100 100)
-         :velocity (vector/create 2.5 3)}))
+  (atom {:mover (create-mover 400 200 0 0 -0.001 0.01)}))
 
 (defn setup []
   (js/createCanvas width height))
 
 (defn draw []
-  (let [v (vector/add (:location @state) (:velocity @state))
-        m (vector/create js/mouseX js/mouseY)
-        c (vector/create (/ width 2) (/ height 2))
-        mouse (vector/sub m c)]
-    ;(swap! state assoc :location v)
-    ;(vector/bounce-velocity state width height)
-                                        ;(vector/draw (:location @state))
-    (js/translate (/ width 2) (/ height 2))
-    (js/line 0 0 (:x mouse) (:y mouse))))
+  (let [st (:mover @state)
+        a (:acceleration st)
+        v (vector/add (:velocity st) a)
+        l (vector/add (:location st) v)]
+    (swap! state assoc :mover (create-mover-vec l v a))
+    (vector/draw l)))
 
 ;; start stop pattern as described in
 ;; https://github.com/thheller/shadow-cljs/wiki/ClojureScript-for-the-browser
