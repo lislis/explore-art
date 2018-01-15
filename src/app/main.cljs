@@ -1,19 +1,24 @@
 (ns app.main
   (:require [app.walker :as walker]
             [app.distribution :as dist]
-            [app.noise :as noise]))
+            [app.noise :as noise]
+            [app.vector :as vector]))
 
 (def width 600)
 (def height 400)
 
 (defonce state
-  (atom {:xoff 0.0 :yoff 10000.0}))
+  (atom {:location (vector/create 100 100)
+         :velocity (vector/create 2.5 3)}))
 
 (defn setup []
   (js/createCanvas width height))
 
 (defn draw []
-  )
+  (let [v (vector/add (:location @state) (:velocity @state))]
+    (swap! state assoc :location v)
+    (vector/bounce-velocity state width height)
+    (vector/draw (:location @state))))
 
 ;; start stop pattern as described in
 ;; https://github.com/thheller/shadow-cljs/wiki/ClojureScript-for-the-browser
