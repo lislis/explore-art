@@ -15,10 +15,15 @@
   (js/createCanvas width height))
 
 (defn draw []
-  (let [v (vector/add (:location @state) (:velocity @state))]
-    (swap! state assoc :location v)
-    (vector/bounce-velocity state width height)
-    (vector/draw (:location @state))))
+  (let [v (vector/add (:location @state) (:velocity @state))
+        m (vector/create js/mouseX js/mouseY)
+        c (vector/create (/ width 2) (/ height 2))
+        mouse (vector/sub m c)]
+    ;(swap! state assoc :location v)
+    ;(vector/bounce-velocity state width height)
+                                        ;(vector/draw (:location @state))
+    (js/translate (/ width 2) (/ height 2))
+    (js/line 0 0 (:x mouse) (:y mouse))))
 
 ;; start stop pattern as described in
 ;; https://github.com/thheller/shadow-cljs/wiki/ClojureScript-for-the-browser

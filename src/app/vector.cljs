@@ -13,6 +13,15 @@
 ;;     (bounce-velocity state width height)
 ;;     (draw (:location @state))))
 
+;; draw lines from center to mouse
+;; (defn draw []
+;; (let [v (vector/add (:location @state) (:velocity @state))
+;;       m (vector/create js/mouseX js/mouseY)
+;;       c (vector/create (/ width 2) (/ height 2))
+;;       mouse (vector/sub m c)]
+;;   (js/translate (/ width 2) (/ height 2))
+;;   (js/line 0 0 (:x mouse) (:y mouse))))
+
 
 (defn create
   "creates a vector"
@@ -25,6 +34,41 @@
   (let [x (+ (:x vec1) (:x vec2))
         y (+ (:y vec1) (:y vec2))]
     (create x y)))
+
+(defn sub
+  "subtracts two vectors"
+  [vec1 vec2]
+  (let [x (- (:x vec1) (:x vec2))
+        y (- (:y vec1) (:y vec2))]
+    (create x y)))
+
+(defn mult
+  "multiplies vector by scalar"
+  [vec scalar]
+  (let [x (* (:x vec) scalar)
+        y (* (:y vec) scalar)]
+    (create x y)))
+
+(defn div
+  "divides vector by scalar"
+  [vec scalar]
+  (let [x (/ (:x vec) scalar)
+        y (/ (:y vec) scalar)]
+    (create x y)))
+
+(defn mag
+  "returns magnitude of a vector"
+  [vec]
+  (let [x (:x vec)
+        y (:y vec)]
+    (js/Math.sqrt (* x x) (* y y))))
+
+(defn normalize
+  "normalizes vector to 1"
+  [vec]
+  (let [m (mag vec)]
+    (when (not (= m 0))
+      (div vec m))))
 
 (defn bounce-velocity [state width height]
   (if (or (> (:x (:location @state)) width) (< (:x (:location @state)) 0))
