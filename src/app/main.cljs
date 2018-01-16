@@ -2,53 +2,50 @@
   (:require [app.walker :as walker]
             [app.distribution :as dist]
             [app.noise :as noise]
-            [app.vector :as vector]))
+            [app.vector :as vector]
+            [app.mover :as mover]))
 
 (def width 600)
 (def height 400)
 
-(defn create-mover-vec [l v a]
-  {:location l
-   :velocity v
-   :acceleration a})
+(defn accelerate []
+  (let [x (:x (:acceleration (:mover @state)))
+        new-x (+ x 0.01)]
+    (swap! state assoc-in [:mover :acceleration] {:x new-x})))
 
-(defn create-mover [x y vx vy ax ay]
-  (create-mover-vec
-   (vector/create x y)
-   (vector/create vx vy)
-   (vector/create ax ay)))
-
-(defn wrap-edges [vec width height]
-  (let [x (cond (> (:x vec) width) 0
-                (< (:x vec) 0) width
-                :else (:x vec))
-        y (cond (> (:y vec) height) 0
-                (< (:y vec) 0) height
-                :else (:y vec))]
-    (vector/create x y)))
+(defn decelerate []
+  (let [x (:x (:acceleration (:mover @state)))
+        new-x (- x 0.01)]
+    (swap! state assoc-in [:mover :acceleration] {:x new-x})))
 
 (defonce state
-  (atom {:mover (create-mover 400 200 0 0 -0.001 0.01)}))
+  (atom {:mover (mover/create 400 200 0 0 0.001 0 8)}))
 
 (defn setup []
   (js/createCanvas width height))
 
 (defn draw []
-  (let [st (:mover @state)
-        a (:acceleration st)
-        calc-v (vector/add (:velocity st) a)
-        v (vector/limit calc-v 10)
-        calc-l (vector/add (:location st) v)
-        l (wrap-edges calc-l width height)]
-    (swap! state assoc :mover (create-mover-vec l v a)) ; emulates update()
-    (vector/draw l)))
+  (let [updated-mover (mover/updates (:mover @state) state width height)]
+    (swap! state assoc :mover updated-mover) ; emulates update()
+    (vector/draw (:location (:mover @state)))))
+
+(defn keypressed []
+  (let [left 37
+        right 39
+        up 38
+        down 40]
+    (condp = js/keyCode
+      up (accelerate)
+      down (decelerate)
+      (js/console.log "not configured"))))
 
 ;; start stop pattern as described in
 ;; https://github.com/thheller/shadow-cljs/wiki/ClojureScript-for-the-browser
 (defn start []
   (doto js/window
     (aset "setup" setup)
-    (aset "draw" draw))
+    (aset "draw" draw)
+    (aset "keyPressed" keypressed))
   (js/console.log "START"))
 
 (defn stop []
