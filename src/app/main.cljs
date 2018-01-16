@@ -18,6 +18,15 @@
    (vector/create vx vy)
    (vector/create ax ay)))
 
+(defn wrap-edges [vec width height]
+  (let [x (cond (> (:x vec) width) 0
+                (< (:x vec) 0) width
+                :else (:x vec))
+        y (cond (> (:y vec) height) 0
+                (< (:y vec) 0) height
+                :else (:y vec))]
+    (vector/create x y)))
+
 (defonce state
   (atom {:mover (create-mover 400 200 0 0 -0.001 0.01)}))
 
@@ -27,9 +36,11 @@
 (defn draw []
   (let [st (:mover @state)
         a (:acceleration st)
-        v (vector/add (:velocity st) a)
-        l (vector/add (:location st) v)]
-    (swap! state assoc :mover (create-mover-vec l v a))
+        calc-v (vector/add (:velocity st) a)
+        v (vector/limit calc-v 10)
+        calc-l (vector/add (:location st) v)
+        l (wrap-edges calc-l width height)]
+    (swap! state assoc :mover (create-mover-vec l v a)) ; emulates update()
     (vector/draw l)))
 
 ;; start stop pattern as described in

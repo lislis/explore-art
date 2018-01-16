@@ -67,8 +67,16 @@
   "normalizes vector to 1"
   [vec]
   (let [m (mag vec)]
-    (when (not (= m 0))
-      (div vec m))))
+    (if (not (= m 0))
+      (div vec m)
+      vec)))
+
+(defn limit
+  "limit magnitude of vector, returns vector"
+  [vec limit]
+  (if (< (mag vec) limit)
+    vec
+    (mult (normalize vec) limit)))
 
 (defn bounce-velocity [state width height]
   (if (or (> (:x (:location @state)) width) (< (:x (:location @state)) 0))
