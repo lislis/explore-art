@@ -28,6 +28,13 @@
   [x y]
   {:x x :y y})
 
+(defn random2d
+  "returns normalized random vector"
+  []
+  (let [x (js/random -5 5)
+        y (js/random -5 5)]
+    (normalize (create x y))))
+
 (defn add
   "adds two vectors together"
   [vec1 vec2]

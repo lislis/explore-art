@@ -34,11 +34,34 @@
                 :else (:y vec))]
     (vector/create x y)))
 
-(defn updates [mover state width height]
-  (let [st (:mover @state)
+(defn updates [mover width height]
+  (let [st mover
         a (:acceleration st)
         calc-v (vector/add (:velocity st) a)
         v (vector/limit calc-v (:topspeed st))
         calc-l (vector/add (:location st) v)
         l (wrap-edges calc-l width height)]
-    (create-vec l v a (:topspeed st))))
+    (create-vec l v a (:topspeed mover))))
+
+(defn updates-random-acceleration [mover width height]
+  (let [st mover
+        rand-a (vector/random2d)
+        a (vector/mult rand-a 0.2)
+        calc-v (vector/add (:velocity st) a)
+        v (vector/limit calc-v (:topspeed st))
+        calc-l (vector/add (:location st) v)
+        l (wrap-edges calc-l width height)]
+    ;;(js/console.log (:x a) (:y a))
+    (create-vec l v a (:topspeed mover))))
+
+(defn updates-perlin-acceleration [mover width height xoff yoff]
+  (let [st mover
+        rand-a (vector/create (js/noise xoff) (js/noise yoff))
+        a (vector/mult rand-a 0.03)
+        calc-v (vector/add (:velocity st) a)
+        v (vector/limit calc-v (:topspeed st))
+        calc-l (vector/add (:location st) v)
+        l (wrap-edges calc-l width height)]
+    ;(js/console.log (:x a) (:y a))
+    ;;(js/console.log (:x a) (:y a))
+    (create-vec l v a (:topspeed mover))))

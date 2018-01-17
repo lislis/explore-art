@@ -19,14 +19,20 @@
     (swap! state assoc-in [:mover :acceleration] {:x new-x})))
 
 (defonce state
-  (atom {:mover (mover/create 400 200 0 0 0.001 0 8)}))
+  (atom {:mover (mover/create 100 200 0 0 0.001 0.001 2)
+         :xoff 2
+         :yoff 100057}))
 
 (defn setup []
   (js/createCanvas width height))
 
 (defn draw []
-  (let [updated-mover (mover/updates (:mover @state) state width height)]
+  (let [xoff (:xoff @state)
+        yoff (:yoff @state)
+        updated-mover (mover/updates-perlin-acceleration (:mover @state) width height xoff yoff)]
     (swap! state assoc :mover updated-mover) ; emulates update()
+    (swap! state update :xoff inc :yoff inc)
+    ;(js/console.log xoff)
     (vector/draw (:location (:mover @state)))))
 
 (defn keypressed []
@@ -49,7 +55,7 @@
   (js/console.log "START"))
 
 (defn stop []
-  (js.clear)
+  (js/clear)
   (js/console.log "STOP"))
 
 (defn ^:export init []
