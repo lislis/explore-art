@@ -8,32 +8,21 @@
 (def width 600)
 (def height 400)
 
-(defn accelerate []
-  (let [x (:x (:acceleration (:mover @state)))
-        new-x (+ x 0.01)]
-    (swap! state assoc-in [:mover :acceleration] {:x new-x})))
-
-(defn decelerate []
-  (let [x (:x (:acceleration (:mover @state)))
-        new-x (- x 0.01)]
-    (swap! state assoc-in [:mover :acceleration] {:x new-x})))
-
 (defonce state
-  (atom {:mover (mover/create 100 200 0 0 0.001 0.001 2)
-         :xoff 2
-         :yoff 100057}))
+  (atom {:movers []}))
 
 (defn setup []
-  (js/createCanvas width height))
+  (js/createCanvas width height)
+  (swap! state assoc :movers (mover/seed 5)))
 
 (defn draw []
-  (let [xoff (:xoff @state)
-        yoff (:yoff @state)
-        updated-mover (mover/updates-perlin-acceleration (:mover @state) width height xoff yoff)]
-    (swap! state assoc :mover updated-mover) ; emulates update()
-    (swap! state update :xoff inc :yoff inc)
-    ;(js/console.log xoff)
-    (vector/draw (:location (:mover @state)))))
+  (let [list (:movers @state)]
+    (swap! state assoc :movers (mapv mover/accelerate-to-mouse list))
+    (dorun
+     (for [m list]
+       (let [location (:location m)]
+         (js/ellipse (:x location) (:y location) 20 20))))
+    ))
 
 (defn keypressed []
   (let [left 37
@@ -41,8 +30,8 @@
         up 38
         down 40]
     (condp = js/keyCode
-      up (accelerate)
-      down (decelerate)
+      up (mover/accelerate)
+      down (mover/decelerate)
       (js/console.log "not configured"))))
 
 ;; start stop pattern as described in
@@ -50,8 +39,8 @@
 (defn start []
   (doto js/window
     (aset "setup" setup)
-    (aset "draw" draw)
-    (aset "keyPressed" keypressed))
+    ;(aset "keyPressed" keypressed)
+    (aset "draw" draw))
   (js/console.log "START"))
 
 (defn stop []
