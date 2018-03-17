@@ -68,7 +68,7 @@
   [vec]
   (let [x (:x vec)
         y (:y vec)]
-    (js/Math.sqrt (* x x) (* y y))))
+    (js/Math.sqrt (+ (* x x) (* y y)))))
 
 (defn normalize
   "normalizes vector to 1"
