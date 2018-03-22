@@ -31,9 +31,12 @@
     (let [m (create (+ 100 (* 50 i)) 50 0 0 0 0 3 (js/randomGaussian 30 20))]
       m)))
 
-(defn apply-force [mover force]
+(defn apply-force [mover force-list]
   (let [mass (:mass mover)
-        f (vec/div force mass)
+        wind (:wind force-list)
+        gravity (vec/create 0 (* (:y (:gravity force-list)) mass))
+        force-sum (vec/add wind gravity)
+        f (vec/div force-sum mass)
         a f
         v1 (vec/limit (vec/add (:velocity mover) a) (:topspeed mover))
         l1 (vec/add (:location mover) v1)
@@ -48,15 +51,9 @@
             :else l1)]
     (create-vec l v (vec/create 0 0) (:topspeed mover) (:mass mover))))
 
-(defn accumulate-forces [force-list]
-  (let [raw-forces (vals force-list)
-        sum-force (reduce vec/add raw-forces)]
-    sum-force))
-
 (defn update-mover [mover]
-  (let [force-list (:forces @state)
-        forces (accumulate-forces force-list)]
-    (apply-force mover forces)))
+  (let [force-list (:forces @state)]
+    (apply-force mover force-list)))
 
 (defn setup []
   (js/createCanvas width height)
