@@ -17,22 +17,22 @@
 
 (defn draw []
   (let [list (:movers @state)]
-    (swap! state assoc :movers (mapv mover/accelerate-to-mouse list))
+;    (swap! state assoc :movers (mapv mover/updates list))
     (dorun
      (for [m list]
        (let [location (:location m)]
          (js/ellipse (:x location) (:y location) 20 20))))
     ))
 
-(defn keypressed []
-  (let [left 37
-        right 39
-        up 38
-        down 40]
-    (condp = js/keyCode
-      up (mover/accelerate)
-      down (mover/decelerate)
-      (js/console.log "not configured"))))
+;; (defn keypressed []
+;;   (let [left 37
+;;         right 39
+;;         up 38
+;;         down 40]
+;;     (condp = js/keyCode
+;;       up (mover/accelerate state)
+;;       down (mover/decelerate)
+;;       (js/console.log "not configured"))))
 
 ;; start stop pattern as described in
 ;; https://github.com/thheller/shadow-cljs/wiki/ClojureScript-for-the-browser

@@ -18,6 +18,8 @@
 ;;   (walker/walker-draw (:walker @state)))
 ;;
 
+(declare walker-step)
+
 (defn walker-draw [walker]
   (let [x (:x walker)
         y (:y walker)]

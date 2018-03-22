@@ -9,8 +9,8 @@
  {:app {:target :browser
         :output-dir "public/js"
         :asset-path "/js"
-        :modules {:main {:entries [app.main]}}
+        :modules {:main {:entries [app.mass]}}
         :devtools {:http-root "public"
                    :http-port 4001
-                   :before-load app.main/stop
-                   :after-load app.main/start}}}}
+                   :before-load app.mass/stop
+                   :after-load app.mass/start}}}}
