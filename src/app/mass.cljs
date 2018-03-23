@@ -1,108 +1,86 @@
 (ns app.mass
   (:require [app.vector :as vec]))
 
-
-(def width 800)
-(def height 400)
-
-(defonce state
-  (atom {:movers []
-         :forces {:wind {:x 0.0 :y 0.0}
-                  :gravity {:x 0.0 :y 0.2}}}))
-
-
-(defn create-vec [l v a topspeed mass]
+(defn create-vec [l v a topspeed]
   {:location l
    :velocity v
    :acceleration a
    :topspeed topspeed
-   :mass mass})
+   :mass 0})
 
-(defn create [x y vx vy ax ay topspeed mass]
+(defn create [x y vx vy ax ay topspeed]
   (create-vec
    (vec/create x y)
    (vec/create vx vy)
    (vec/create ax ay)
-   topspeed
-   mass))
+   topspeed))
 
 (defn seed [num]
   (for [i (range num)]
-    (let [m (create (+ 100 (* 50 i)) 50 0 0 0 0 3 (js/randomGaussian 30 20))]
+    (let [m (create (+ 100 (* 100 i)) (js/random 100 150) 0 0 0 0 2)]
       m)))
 
-(defn apply-force [mover force-list]
-  (let [mass (:mass mover)
-        wind (:wind force-list)
-        gravity (vec/create 0 (* (:y (:gravity force-list)) mass))
-        force-sum (vec/add wind gravity)
-        f (vec/div force-sum mass)
-        a f
-        v1 (vec/limit (vec/add (:velocity mover) a) (:topspeed mover))
-        l1 (vec/add (:location mover) v1)
-        v (cond
-              (> (:x l1) width) (vec/create (* -1 (:x v1)) (:y v1))
-            (< (:x l1) 0) (vec/create (* -1 (:x v1)) (:y v1))
-            (> (:y l1) height) (vec/create (:x v1) (* -1 (:y v1)))
-            :else v1)
-        l (cond (> (:x l1) width) (vec/create width (:y l1))
-            (< (:x l1) 0) (vec/create 0 (:y l1))
-            (> (:y l1) height) (vec/create (:x l1) height)
-            :else l1)]
-    (create-vec l v (vec/create 0 0) (:topspeed mover) (:mass mover))))
+(defn wrap-edges [vec width]
+  (let [x (cond (> (:x vec) width) 20
+                (< (:x vec) 20) width
+                :else (:x vec))]
+    (vec/create x (:y vec))))
+
+(defn apply-force [mover force]
+  (let [a (if (> (:y (:location mover)) 35) ; half the balloon height
+            force
+            (vec/add force {:x 0 :y 0.3})) ; force of the ceiling pushing back
+        v (vec/limit (vec/add (:velocity mover) a) (:topspeed mover))
+        l (wrap-edges (vec/add (:location mover) v) width)]
+    (create-vec l v (vec/create 0 0) (:topspeed mover))))
+
+(defn accumulate-forces [force-list]
+  (let [raw-forces (vals force-list)
+        sum-force (reduce vec/add raw-forces)]
+    sum-force))
 
 (defn update-mover [mover]
-  (let [force-list (:forces @state)]
-    (apply-force mover force-list)))
+  (let [force-list (:forces @state)
+        forces (accumulate-forces force-list)]
+    (apply-force mover forces)))
+
+(defn perlin-wind [wind]
+  (let [xoff (+ (:xoff wind) 0.01)
+        x (js/map (js/noise xoff) 0 1 -0.02 0.02)]
+    {:x x :y 0 :xoff xoff}))
+
+(def width 600)
+(def height 400)
+
+(defonce state
+  (atom {:movers []
+         :forces {:wind {:x 0.0 :y 0.0 :xoff 100000}
+                  :helium {:x 0.0 :y -0.008}}}))
 
 (defn setup []
   (js/createCanvas width height)
-  (swap! state assoc :movers (seed 20)))
+  (swap! state assoc :movers (seed 6)))
 
 (defn draw []
   (js/background 255)
-  (let [list (:movers @state)]
+  (let [list (:movers @state)
+        wind (:wind (:forces @state))]
     (swap! state assoc :movers (mapv update-mover list))
-
+    (swap! state assoc-in [:forces :wind] (perlin-wind wind))
     (dorun
      (for [m list]
-       (let [location (:location m)
-             mass (:mass m)]
-         (js/fill (- 255 (* 3 (js/ceil mass))))
-         (js/ellipse (:x location) (:y location) mass mass))))
+       (let [location (:location m)]
+         (js/stroke 0)
+         (js/fill 120 180 50)
+         (js/ellipse (:x location) (:y location) 50 70))))
     ))
 
-(defn blow-left []
-  (let [f (:forces @state)
-        wind (:wind f)
-        new-wind (vec/add wind (vec/create 0.05 0))]
-    (swap! state assoc-in [:forces :wind]  new-wind)
-    new-wind))
-
-(defn blow-right []
-  (let [f (:forces @state)
-        wind (:wind f)
-        grav (:gravity f)
-        new-wind (vec/add wind (vec/create -0.05 0))]
-    (swap! state assoc-in [:forces :wind] new-wind)
-    new-wind))
-
-(defn keypressed []
-  (let [left 37
-        right 39
-        up 38
-        down 40]
-    (condp = js/keyCode
-      left (blow-left)
-      right (blow-right)
-      (js/console.log "not configured"))))
 
 ;; start stop pattern as described in
 ;; https://github.com/thheller/shadow-cljs/wiki/ClojureScript-for-the-browser
 (defn start []
   (doto js/window
     (aset "setup" setup)
-    (aset "keyPressed" keypressed)
     (aset "draw" draw))
   (js/console.log "START"))
 
